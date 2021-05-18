@@ -2,10 +2,14 @@ package ru.netology;
 
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
+import ru.netology.event.TestEvent;
+import ru.netology.serde.TestEventSerializer;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Instant;
 import java.util.Properties;
+import java.util.UUID;
 
 public class Producer {
 
@@ -15,11 +19,12 @@ public class Producer {
         config.put("bootstrap.servers", "localhost:9092");
         config.put("acks", "all");
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        KafkaProducer<String, String> producer = new KafkaProducer<>(config);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, TestEventSerializer.class);
+        KafkaProducer<String, TestEvent> producer = new KafkaProducer<>(config);
 
         while (true) {
-            final ProducerRecord<String, String> record = new ProducerRecord<>("test.topic.plain", "key", "Hello, world");
+            var testEvent = new TestEvent("Hello, world!", Instant.now().toEpochMilli());
+            final ProducerRecord<String, TestEvent> record = new ProducerRecord<>("test.topic.json", UUID.randomUUID().toString(), testEvent);
             System.out.println("Record: " + record);
             producer.send(record, new Callback() {
                 public void onCompletion(RecordMetadata metadata, Exception e) {

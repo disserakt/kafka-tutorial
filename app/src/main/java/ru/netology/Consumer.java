@@ -5,6 +5,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import ru.netology.event.TestEvent;
+import ru.netology.serde.TestEventDeserializer;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,12 +22,12 @@ public class Consumer {
         config.put("group.id", "foo");
         config.put("bootstrap.servers", "localhost:9092");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, TestEventDeserializer.class);
 
-        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(config)) {
-            consumer.subscribe(Collections.singletonList("test.topic.plain"));
+        try (KafkaConsumer<String, TestEvent> consumer = new KafkaConsumer<>(config)) {
+            consumer.subscribe(Collections.singletonList("test.topic.json"));
             while (true) {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(500));
+                ConsumerRecords<String, TestEvent> records = consumer.poll(Duration.ofMillis(500));
                 records.forEach(record -> System.out.println("Record: " + record));
                 consumer.commitAsync();
             }
